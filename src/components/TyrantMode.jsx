@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 
 function TyrantMode() {
@@ -246,9 +247,13 @@ function TyrantMode() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text overflow-hidden">
+      <Helmet>
+        <title>暴君模式 - 强制决策 - XZ Terminator</title>
+        <meta name="description" content="暴君模式，通过强制快速选择，帮你打破选择困难症，果断做出决定。" />
+      </Helmet>
       <Navigation title={t('tyrant-title')} />
       
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -375,7 +380,7 @@ function TyrantMode() {
               : (t('tyrant-title') === '暴君模式' ? '选择“丢弃”将永远消除这个选项，无法撤销' : 'Choosing "Discard" will permanently eliminate this option, cannot be undone')}
           </p>
         </motion.div>
-      </div>
+      </main>
     </div>
   )
 }

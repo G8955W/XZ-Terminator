@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 function EliminationPage() {
   const location = useLocation()
@@ -53,9 +54,13 @@ function EliminationPage() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text">
+      <Helmet>
+        <title>淘汰赛 - 两两对决 - XZ Terminator</title>
+        <meta name="description" content="淘汰赛决策工具，通过两两对决方式，逐步淘汰选项，最终找到最优答案。" />
+      </Helmet>
       <Navigation title={t('elimination-title')} />
       
-      <motion.div
+      <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8"
@@ -145,7 +150,7 @@ function EliminationPage() {
             />
           </div>
         </motion.div>
-      </motion.div>
+      </motion.main>
     </div>
   )
 }

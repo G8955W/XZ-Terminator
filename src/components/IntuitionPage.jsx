@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 
 function IntuitionPage() {
@@ -86,9 +87,13 @@ function IntuitionPage() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text">
+      <Helmet>
+        <title>直觉探测器 - 躯体反应测试 - XZ Terminator</title>
+        <meta name="description" content="直觉探测器，通过躯体反应测试，帮助你发现内心真实的直觉选择。" />
+      </Helmet>
       <Navigation title={t('intuition-title')} />
       
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8 relative overflow-hidden">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8 relative overflow-hidden">
         <AnimatePresence>
           {showBlur && (
             <motion.div
@@ -274,7 +279,7 @@ function IntuitionPage() {
             </motion.button>
           </motion.div>
         )}
-      </div>
+      </main>
     </div>
   )
 }

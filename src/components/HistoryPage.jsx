@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 function HistoryPage() {
   const navigate = useNavigate()
@@ -74,9 +75,13 @@ function HistoryPage() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text">
+      <Helmet>
+        <title>决断档案馆 - 历史决策记录 - XZ Terminator</title>
+        <meta name="description" content="决断档案馆，查看你的所有历史决策记录，回顾每一次重要选择。" />
+      </Helmet>
       <Navigation title={t('history-title')} />
       
-      <div className="pt-14 px-4 py-8">
+      <main className="pt-14 px-4 py-8">
         {history.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -258,7 +263,7 @@ function HistoryPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </main>
     </div>
   )
 }

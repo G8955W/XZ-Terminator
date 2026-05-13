@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 function DecisionCirclePage() {
   const location = useLocation()
@@ -39,9 +40,13 @@ function DecisionCirclePage() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text">
+      <Helmet>
+        <title>决策循环 - 循环决策工具 - XZ Terminator</title>
+        <meta name="description" content="决策循环工具，通过循环展示选项，帮你在多个选择中找到最适合的答案。" />
+      </Helmet>
       <Navigation title={t('decision-circle')} />
       
-      <motion.div
+      <motion.main
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6 }}
@@ -134,7 +139,7 @@ function DecisionCirclePage() {
         >
           {t('decision-circle') === '决策圈' ? '两种方式都能帮你找到内心真正的答案' : 'Both methods can help you find your true inner answer'}
         </motion.p>
-      </motion.div>
+      </motion.main>
     </div>
   )
 }

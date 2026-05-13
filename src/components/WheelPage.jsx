@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
+import DecisionCard from './DecisionCard'
 
 function WheelPage() {
   const location = useLocation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { t } = useTranslation()
   const [isSpinning, setIsSpinning] = useState(false)
   const [rotation, setRotation] = useState(0)
@@ -15,16 +18,54 @@ function WheelPage() {
   const [timeLeft, setTimeLeft] = useState(180)
   const [reason, setReason] = useState('')
   const [isLocked, setIsLocked] = useState(false)
+  const [showDecisionCard, setShowDecisionCard] = useState(false)
+  const [options, setOptions] = useState([])
+  const [originalOptions, setOriginalOptions] = useState([])
+  const [hasAutoSpun, setHasAutoSpun] = useState(false)
   const wheelRef = useRef(null)
 
-  const options = location.state?.options || []
-  const originalOptions = location.state?.originalOptions || []
-
+  // 初始化选项
   useEffect(() => {
-    if (!options.length) {
+    // 首先尝试从 URL 参数读取
+    const optionsParam = searchParams.get('options')
+    if (optionsParam) {
+      try {
+        const decodedOptions = decodeURIComponent(optionsParam).split(',').filter(opt => opt.trim())
+        if (decodedOptions.length >= 2) {
+          setOptions(decodedOptions)
+          setOriginalOptions(decodedOptions)
+          return
+        }
+      } catch (e) {
+        console.error('Failed to parse options:', e)
+      }
+    }
+
+    // 然后尝试从 state 读取
+    if (location.state?.options) {
+      setOptions(location.state.options)
+      setOriginalOptions(location.state.originalOptions || location.state.options)
+    }
+  }, [location.state, searchParams])
+
+  // 没有选项时跳转，但如果有 state 数据则等待加载
+  useEffect(() => {
+    if (options.length === 0 && !location.state?.options) {
       navigate('/classic/elimination')
     }
-  }, [options, navigate])
+  }, [options, navigate, location.state])
+
+  // 如果有 URL 参数且还没有自动旋转，就自动开始旋转
+  useEffect(() => {
+    if (options.length >= 2 && searchParams.get('options') && !hasAutoSpun && !isSpinning) {
+      // 延迟一点时间让界面加载完成
+      const timer = setTimeout(() => {
+        spinWheel()
+        setHasAutoSpun(true)
+      }, 800)
+      return () => clearTimeout(timer)
+    }
+  }, [options, searchParams, hasAutoSpun, isSpinning])
 
   const segmentAngle = 360 / options.length
 
@@ -94,9 +135,13 @@ function WheelPage() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text">
+      <Helmet>
+        <title>命运转盘 - 随机选择工具 - XZ Terminator</title>
+        <meta name="description" content="命运转盘随机选择工具，让运气帮你做出艰难的决策。独特的反悔机制，帮助你确认内心真实想法。" />
+      </Helmet>
       <Navigation title={t('wheel-title')} />
       
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -183,6 +228,54 @@ function WheelPage() {
             <div className="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[30px] border-t-white drop-shadow-lg" />
           </motion.div>
         </div>
+
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="w-full max-w-xl mt-12"
+        >
+          <div className="bg-gradient-to-br from-notion-gray/50 to-notion-dark/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-notion-light/20">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-2xl">💡</span>
+              <h2 className="text-xl font-bold text-white">
+                {t('wheel-title') === '命运转盘' ? '如何使用随机转盘做决策' : 'How to Use the Random Wheel'}
+              </h2>
+            </div>
+            
+            <div className="text-gray-300 text-sm md:text-base leading-relaxed space-y-3">
+              <p>
+                {t('wheel-title') === '命运转盘' 
+                  ? '随机转盘是一种经典的决策工具，尤其适合在多个选项之间犹豫不决时使用。心理学研究表明，当我们难以做出选择时，随机性可以帮助我们突破思维定式，发现内心深处的真实偏好。' 
+                  : 'The random wheel is a classic decision-making tool, especially useful when hesitating between multiple options. Psychological research shows that when we struggle to choose, randomness helps break through mental blocks and reveal our true inner preferences.'}
+              </p>
+              <p>
+                {t('wheel-title') === '命运转盘' 
+                  ? '使用时，只需在输入框中添加你的选项，点击旋转按钮即可。我们独特的反悔机制允许你在选择后短暂思考，如果内心有强烈的抵触感，可以写下理由重新选择。这个过程能帮助你更好地了解自己的真实想法。' 
+                  : 'Simply add your options, click spin, and let fate decide. Our unique regret mechanism allows you to reconsider after the wheel stops. If you feel strong resistance, write a reason and spin again. This process helps you better understand your true desires.'}
+              </p>
+            </div>
+
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              {[
+                { icon: '🎯', label: '快速决策' },
+                { icon: '⚖️', label: '公平公正' },
+                { icon: '✨', label: '发现自我' }
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.7 + index * 0.1 }}
+                  className="text-center p-3 bg-notion-dark/50 rounded-xl"
+                >
+                  <div className="text-xl mb-1">{item.icon}</div>
+                  <div className="text-xs text-gray-400">{item.label}</div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
 
         <AnimatePresence>
           {showModal && (
@@ -272,8 +365,16 @@ function WheelPage() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={() => setShowDecisionCard(true)}
+                        className="mt-4 w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                      >
+                        🎨 {t('wheel-title') === '命运转盘' ? '生成手绘裁决卡' : 'Generate Decision Card'}
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => navigate('/')}
-                        className="mt-4 px-8 py-2 bg-notion-dark text-white rounded-lg font-semibold hover:bg-notion-light transition-colors"
+                        className="mt-3 w-full py-2 bg-notion-dark text-white rounded-lg font-semibold hover:bg-notion-light transition-colors"
                       >
                         {t('back-to-menu')}
                       </motion.button>
@@ -284,7 +385,17 @@ function WheelPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+
+        <AnimatePresence>
+          {showDecisionCard && (
+            <DecisionCard
+              result={selectedOption}
+              isChinese={t('wheel-title') === '命运转盘'}
+              onClose={() => setShowDecisionCard(false)}
+            />
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   )
 }

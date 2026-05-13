@@ -1,13 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 function InitialPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { t } = useTranslation()
   const [options, setOptions] = useState(['', '', '', ''])
+  const [showShareLink, setShowShareLink] = useState(false)
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options]
@@ -38,11 +41,59 @@ function InitialPage() {
 
   const isValid = options.filter(opt => opt.trim() !== '').length >= 4
 
+  // 读取 URL 参数并自动填充选项
+  useEffect(() => {
+    const optionsParam = searchParams.get('options')
+    if (optionsParam) {
+      try {
+        const decodedOptions = decodeURIComponent(optionsParam).split(',').filter(opt => opt.trim())
+        if (decodedOptions.length >= 4) {
+          // 确保有至少4个空的输入框
+          const filledOptions = [...decodedOptions]
+          while (filledOptions.length < 4) {
+            filledOptions.push('')
+          }
+          setOptions(filledOptions)
+        }
+      } catch (e) {
+        console.error('Failed to parse options:', e)
+      }
+    }
+  }, [searchParams])
+
+  // 生成分享链接
+  const generateShareLink = () => {
+    const validOptions = options.filter(opt => opt.trim() !== '')
+    if (validOptions.length < 2) return null
+    
+    const encodedOptions = encodeURIComponent(validOptions.join(','))
+    const url = `${window.location.origin}${window.location.pathname}?options=${encodedOptions}`
+    return url
+  }
+
+  const copyShareLink = async () => {
+    const link = generateShareLink()
+    if (link) {
+      try {
+        await navigator.clipboard.writeText(link)
+        alert(t('elimination-title') === '淘汰赛' ? '分享链接已复制到剪贴板！' : 'Share link copied!')
+      } catch (e) {
+        console.error('Failed to copy:', e)
+      }
+    }
+  }
+
+  const shareLink = generateShareLink()
+
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text">
+      <Helmet>
+        <title>淘汰赛 - 输入选项 - XZ Terminator</title>
+        <meta name="description" content="淘汰赛输入页面，请输入至少4个选项进行对决。" />
+      </Helmet>
       <Navigation title={t('elimination-title')} />
       
-      <motion.div
+      <motion.main
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -129,6 +180,33 @@ function InitialPage() {
             >
               {t('elimination-start')}
             </motion.button>
+
+            {shareLink && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-6 bg-notion-gray/50 rounded-xl p-4 border border-notion-light/30"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-400 text-sm font-medium">
+                    {t('elimination-title') === '淘汰赛' ? '🔗 分享链接' : '🔗 Share Link'}
+                  </span>
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={copyShareLink}
+                    className="px-4 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all"
+                  >
+                    {t('elimination-title') === '淘汰赛' ? '复制链接' : 'Copy Link'}
+                  </motion.button>
+                </div>
+                <p className="text-gray-500 text-xs break-all font-mono">
+                  {shareLink}
+                </p>
+              </motion.div>
+            )}
           </form>
 
           <motion.p
@@ -140,7 +218,7 @@ function InitialPage() {
             {t('elimination-title') === '淘汰赛' ? '至少需要 4 个选项才能开始' : 'At least 4 options required'}
           </motion.p>
         </motion.div>
-      </motion.div>
+      </motion.main>
     </div>
   )
 }

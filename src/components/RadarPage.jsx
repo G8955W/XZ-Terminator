@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 
 function RadarChart({ data, size = 300, criteria }) {
@@ -225,9 +226,13 @@ function RadarPage() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text">
+      <Helmet>
+        <title>理性天平 - 多维度决策分析 - XZ Terminator</title>
+        <meta name="description" content="理性天平多维度决策分析工具，通过雷达图打分方式，帮助你做出更加理性的选择。" />
+      </Helmet>
       <Navigation title={t('radar-title')} />
       
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8">
         <AnimatePresence mode="wait">
           {phase === 'input' && (
             <motion.div
@@ -447,7 +452,7 @@ function RadarPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </main>
     </div>
   )
 }

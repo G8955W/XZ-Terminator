@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Helmet } from 'react-helmet-async'
 
 function HubPage() {
   const navigate = useNavigate()
@@ -58,7 +59,11 @@ function HubPage() {
 
   return (
     <div className="min-h-screen bg-notion-dark flex flex-col items-center justify-center px-4 py-8">
-      <motion.div
+      <Helmet>
+        <title>经典模式 - 决策工具中心 - XZ Terminator</title>
+        <meta name="description" content="经典模式决策工具中心，包含淘汰赛、命运转盘、直觉探测器等多种经典决策方式。" />
+      </Helmet>
+      <motion.main
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
@@ -66,7 +71,7 @@ function HubPage() {
       >
         <motion.h1
           className="text-5xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500 bg-clip-text text-transparent"
-          animate={{ 
+          animate={{
             backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
           }}
           transition={{ duration: 5, repeat: Infinity }}
@@ -81,7 +86,7 @@ function HubPage() {
         >
           {t('app-title') === '选择终结者' ? '让每一次选择都成为命运的礼物' : 'Make every choice a gift of fate'}
         </motion.p>
-      </motion.div>
+      </motion.main>
 
       <motion.div
         variants={containerVariants}
@@ -100,7 +105,7 @@ function HubPage() {
           >
             <div className={`absolute inset-0 bg-gradient-to-r ${item.gradient} opacity-90 group-hover:opacity-100 transition-opacity`} />
             <div className="absolute inset-0 bg-black opacity-20 group-hover:opacity-10 transition-opacity" />
-            
+
             <div className="relative z-10">
               <motion.div
                 className="text-4xl md:text-5xl mb-4"

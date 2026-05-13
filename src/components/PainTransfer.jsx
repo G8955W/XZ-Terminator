@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 const STORAGE_KEY = 'pain_transfer_state'
 
@@ -423,9 +424,13 @@ function PainTransfer() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text">
+      <Helmet>
+        <title>命运甩锅 - 社交决策游戏 - XZ Terminator</title>
+        <meta name="description" content="命运甩锅，将你的决策难题分享给朋友，让他们帮你做出选择，增添社交乐趣。" />
+      </Helmet>
       <Navigation title={t('pain-transfer')} />
 
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -500,7 +505,7 @@ function PainTransfer() {
             </p>
           </motion.div>
         </motion.div>
-      </div>
+      </main>
     </div>
   )
 }

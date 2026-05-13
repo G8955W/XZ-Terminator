@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { Helmet } from 'react-helmet-async'
 
 
 function ToxicityTest() {
@@ -246,9 +247,13 @@ function ToxicityTest() {
 
   return (
     <div className="min-h-screen bg-notion-dark text-notion-text overflow-hidden">
+      <Helmet>
+        <title>毒性测试 - 排除最差选项 - XZ Terminator</title>
+        <meta name="description" content="毒性测试，通过两两对比排除最差选项，帮你找到相对最优的决策方案。" />
+      </Helmet>
       <Navigation title={t('toxicity-test')} />
       
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -340,7 +345,7 @@ function ToxicityTest() {
             点击你更能承受其最坏结果的选项，另一个将被淘汰
           </p>
         </motion.div>
-      </div>
+      </main>
     </div>
   )
 

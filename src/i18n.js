@@ -31,6 +31,20 @@ i18n
           'home-tyrant-desc': '不可逆的阅后即焚',
           'home-pain-transfer-desc': '社交甩锅',
           'home-toxicity-desc': '逆向淘汰',
+
+          // Home 科普文案
+          'home-science-title': '为什么我们总是在做选择时感到焦虑？',
+          'home-science-buridan': '布里丹之驴效应',
+          'home-science-buridan-desc': '一头完全理性的驴子，站在两堆完全相同的干草之间，由于无法做出选择而最终饿死。这个悖论揭示了人类在面临多个等价选项时的困境。',
+          'home-science-paradox': '选择悖论',
+          'home-science-paradox-desc': '随着选项数量的增加，我们的幸福感并没有随之提升，反而因为害怕做出错误选择而感到更加焦虑。过多的选择会让我们陷入「分析瘫痪」，消耗大量的心理能量却迟迟无法做出决定。',
+          'home-science-cognitive': '认知负荷',
+          'home-science-cognitive-desc': '我们的大脑处理信息的能力是有限的，当面临太多选择时，大脑需要同时处理大量信息进行比较和评估，这会让我们感到疲惫和焦虑。每一个选择都意味着放弃其他可能性，这种「机会成本」的计算会进一步加重心理负担。',
+          'home-science-mission': 'XZ-Terminator 的使命',
+          'home-science-mission-desc': '所以，不必为小事纠结！让 XZ-Terminator 替你承担这些琐碎的决策，把宝贵的精力留给那些真正重要的事情吧。毕竟，生活的意义不在于做出完美的选择，而在于享受选择之后的旅程。',
+          'home-science-tag-1': '等价选项困境',
+          'home-science-tag-2': '选项越多越焦虑',
+          'home-science-tag-3': '大脑处理极限',
           
           // 经典模式 Hub
           'hub-classic': '经典淘汰赛',
@@ -177,6 +191,20 @@ i18n
           'home-tyrant-desc': 'Burn after reading',
           'home-pain-transfer-desc': 'Social delegation',
           'home-toxicity-desc': 'Reverse elimination',
+
+          // Home Science Content
+          'home-science-title': 'Why do we always feel anxious when making choices?',
+          'home-science-buridan': "Buridan's Ass",
+          'home-science-buridan-desc': 'Like the donkey that starved to death between two identical bales of hay, when we weigh the pros and cons, our brain\'s "cognitive load" spikes rapidly. This internal friction is the source of anxiety.',
+          'home-science-paradox': 'The Paradox of Choice',
+          'home-science-paradox-desc': "Modern psychologist Barry Schwartz proposed that the more options we have, the more powerless we feel. Too many choices do not bring freedom, but lead to 'analysis paralysis', consuming massive psychological energy while preventing us from making decisions.",
+          'home-science-cognitive': 'Cognitive Load',
+          'home-science-cognitive-desc': "Our brain's capacity to process information is limited. When facing too many choices, the brain needs to simultaneously process large amounts of information for comparison and evaluation, making us feel exhausted and anxious. Every choice means giving up other possibilities, and this 'opportunity cost' calculation further increases psychological burden.",
+          'home-science-mission': 'The Mission of XZ-Terminator',
+          'home-science-mission-desc': "So why stress over the small things! Let XZ-Terminator handle these trivial decisions for you, saving your precious energy for what truly matters. After all, the meaning of life lies not in making perfect choices, but in enjoying the journey after making them.",
+          'home-science-tag-1': 'Equivalent Options Dilemma',
+          'home-science-tag-2': 'More Options = More Anxiety',
+          'home-science-tag-3': 'Brain Processing Limit',
           
           // Classic Hub
           'hub-classic': 'Classic Elimination',
