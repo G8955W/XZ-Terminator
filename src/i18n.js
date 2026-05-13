@@ -132,6 +132,9 @@ i18n
           'pain-transfer-friend-choice': '你的选择将代表朋友做出最终决定',
           'pain-transfer-result': '命运已定',
           'pain-transfer-friend-decision': '你已成功决定了朋友的命运',
+          'pain-transfer-copy-result': '复制结果告诉TA',
+          'pain-transfer-link-ready': '甩锅链接已生成并复制！',
+          'pain-transfer-link-ready-desc': '快发给朋友，然后坐等他的微信回复吧~',
           
           // 毒性测试
           'toxicity-test': '毒性测试',
@@ -275,6 +278,9 @@ i18n
           'pain-transfer-friend-choice': 'Your choice will decide your friend\'s fate',
           'pain-transfer-result': 'Fate Decided',
           'pain-transfer-friend-decision': 'You have successfully decided your friend\'s fate',
+          'pain-transfer-copy-result': 'Copy & Tell Them',
+          'pain-transfer-link-ready': 'Link copied!',
+          'pain-transfer-link-ready-desc': 'Send it to your friend and wait for their reply~',
           
           // Toxicity Test
           'toxicity-test': 'Toxicity Test',

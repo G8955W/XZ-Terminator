@@ -17,13 +17,13 @@ function PainTransfer() {
   const [selectedOption, setSelectedOption] = useState(null)
   const [showConfetti, setShowConfetti] = useState(false)
   const [friendDecision, setFriendDecision] = useState(null)
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const shareMode = params.get('mode')
     const encodedOptions = params.get('options')
-    const decided = params.get('decided')
-    const decision = params.get('decision')
 
     if (shareMode === 'share' && encodedOptions) {
       try {
@@ -32,64 +32,13 @@ function PainTransfer() {
         if (opts.length >= 2) {
           setOptions(opts)
           setMode('friend')
+          setSelectedOption(null)
         }
       } catch (e) {
         console.error('Failed to decode options:', e)
       }
     }
-
-    if (decided === 'true' && decision) {
-      const decodedDecision = decodeURIComponent(decision)
-      setFriendDecision(decodedDecision)
-      setMode('result')
-    }
   }, [])
-
-  useEffect(() => {
-    if (mode !== 'waiting') return
-
-    const handleStorageChange = (e) => {
-      if (e.key === STORAGE_KEY && e.newValue) {
-        try {
-          const state = JSON.parse(e.newValue)
-          if (state.type === 'friend_decided' && state.options) {
-            setFriendDecision(state.decision)
-            setOptions(state.options)
-            setMode('result')
-            setIsWaiting(false)
-          }
-        } catch (err) {
-          console.error('Failed to parse storage event:', err)
-        }
-      }
-    }
-
-    window.addEventListener('storage', handleStorageChange)
-
-    const checkLocalStorage = () => {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        try {
-          const state = JSON.parse(stored)
-          if (state.type === 'friend_decided' && state.options) {
-            setFriendDecision(state.decision)
-            setOptions(state.options)
-            setMode('result')
-            setIsWaiting(false)
-          }
-        } catch (err) {
-          console.error('Failed to parse localStorage:', err)
-        }
-      }
-    }
-
-    const interval = setInterval(checkLocalStorage, 1000)
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      clearInterval(interval)
-    }
-  }, [mode])
 
   const handleInputChange = (index, value) => {
     const newInputs = [...inputOptions]
@@ -156,8 +105,31 @@ function PainTransfer() {
 
     setTimeout(() => {
       setShowConfetti(false)
-      navigate(0)
     }, 3000)
+  }
+
+  const handleCopyResult = () => {
+    const result = selectedOption || friendDecision
+    const isZh = t('pain-transfer') === '痛苦转移'
+    const template = isZh
+      ? `别纠结啦，我帮你选好了！就决定是：【${result}】！✨`
+      : `Stop hesitating, I made the choice for you! It's decided: ${result}! ✨`
+
+    navigator.clipboard.writeText(template).then(() => {
+      setToastMessage(isZh ? '复制成功，快去发给他！' : 'Copied! Go tell them!')
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    }).catch(() => {
+      const textArea = document.createElement('textarea')
+      textArea.value = template
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setToastMessage(isZh ? '复制成功，快去发给他！' : 'Copied! Go tell them!')
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    })
   }
 
   if (mode === 'result') {
@@ -201,13 +173,25 @@ function PainTransfer() {
           </motion.div>
 
           <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleCopyResult}
+            className="mt-6 px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:shadow-xl hover:shadow-yellow-500/30 transition-all"
+          >
+            {t('pain-transfer-copy-result')}
+          </motion.button>
+
+          <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/')}
-            className="mt-8 px-8 py-3 bg-notion-gray text-white rounded-xl font-semibold hover:bg-notion-light transition-colors"
+            className="mt-4 px-8 py-3 bg-notion-gray text-white rounded-xl font-semibold hover:bg-notion-light transition-colors"
           >
             {t('back-to-menu')}
           </motion.button>
@@ -216,63 +200,163 @@ function PainTransfer() {
         <AnimatePresence>
           {showConfetti && <Confetti />}
         </AnimatePresence>
+
+        <AnimatePresence>
+          {showToast && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed bottom-32 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 bg-green-600 text-white rounded-xl shadow-lg font-semibold"
+            >
+              {toastMessage}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     )
   }
 
-  if (mode === 'friend') {
+  if (mode === 'friend' && !selectedOption) {
     return (
-      <div className="min-h-screen bg-notion-dark text-notion-text overflow-hidden">
+      <div className="min-h-screen bg-notion-dark text-notion-text overflow-hidden flex flex-col">
         <Navigation title={t('pain-transfer-friend')} />
 
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8 px-4 pt-8"
-        >
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
           <motion.div
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="text-6xl mb-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
           >
-            🎯
-          </motion.div>
-          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-yellow-400">
-            {t('pain-transfer-friend-title')}
-          </h2>
-          <p className="text-gray-400">
-            {t('pain-transfer-friend-desc')}
-          </p>
-        </motion.div>
-
-        <div className="flex flex-col items-center gap-4 px-4">
-          {options.map((option, index) => (
-            <motion.button
-              key={option + index}
-              initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.2 }}
-              whileHover={{ scale: 1.03, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleFriendChoice(option)}
-              className={`w-full max-w-md py-6 px-8 bg-gradient-to-br from-yellow-600 to-orange-700 text-white rounded-2xl font-bold text-xl hover:shadow-xl hover:shadow-yellow-500/30 transition-all ${selectedOption === option ? 'ring-4 ring-yellow-300 scale-105' : ''}`}
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-6xl mb-4"
             >
-              {option}
-            </motion.button>
-          ))}
-        </div>
+              🎯
+            </motion.div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 text-yellow-400">
+              {t('pain-transfer-friend-title')}
+            </h2>
+            <p className="text-gray-400">
+              {t('pain-transfer-friend-desc')}
+            </p>
+          </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-center text-gray-500 text-sm mt-8 px-4"
-        >
-          {t('pain-transfer-friend-choice')}
-        </motion.p>
+          <div className="flex flex-col items-center gap-4 w-full">
+            {options.map((option, index) => (
+              <motion.button
+                key={option + index}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.2 }}
+                whileHover={{ scale: 1.03, y: -5 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleFriendChoice(option)}
+                className={`w-full max-w-md py-6 px-8 bg-gradient-to-br from-yellow-600 to-orange-700 text-white rounded-2xl font-bold text-xl hover:shadow-xl hover:shadow-yellow-500/30 transition-all ${selectedOption === option ? 'ring-4 ring-yellow-300 scale-105' : ''}`}
+              >
+                {option}
+              </motion.button>
+            ))}
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="text-center text-gray-500 text-sm mt-8"
+          >
+            {t('pain-transfer-friend-choice')}
+          </motion.p>
+        </div>
 
         <AnimatePresence>
           {showConfetti && <Confetti />}
+        </AnimatePresence>
+      </div>
+    )
+  }
+
+  if (mode === 'friend' && selectedOption) {
+    return (
+      <div className="min-h-screen bg-notion-dark text-notion-text overflow-hidden">
+        <Navigation title={t('pain-transfer-result')} />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4"
+        >
+          <motion.div
+            animate={{
+              rotate: [0, 10, -10, 0],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{ duration: 0.5 }}
+            className="text-8xl mb-8"
+          >
+            🎉
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-2xl md:text-3xl font-bold mb-4 text-yellow-400 text-center"
+          >
+            {t('pain-transfer-friend-decision')}
+          </motion.h2>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border-2 border-yellow-600 rounded-2xl p-8 text-center"
+          >
+            <p className="text-4xl md:text-5xl font-bold text-white">
+              {selectedOption}
+            </p>
+          </motion.div>
+
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleCopyResult}
+            className="mt-6 px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-xl font-bold text-lg hover:shadow-xl hover:shadow-yellow-500/30 transition-all"
+          >
+            {t('pain-transfer-copy-result')}
+          </motion.button>
+
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/')}
+            className="mt-4 px-8 py-3 bg-notion-gray text-white rounded-xl font-semibold hover:bg-notion-light transition-colors"
+          >
+            {t('back-to-menu')}
+          </motion.button>
+        </motion.div>
+
+        <AnimatePresence>
+          {showConfetti && <Confetti />}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showToast && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed bottom-32 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 bg-green-600 text-white rounded-xl shadow-lg font-semibold"
+            >
+              {toastMessage}
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
     )
@@ -285,82 +369,28 @@ function PainTransfer() {
 
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-60px)] px-4">
           <motion.div
-            className="relative w-64 h-64 mb-8"
-          >
-            <motion.div
-              className="absolute inset-0 border-4 border-yellow-500 rounded-full"
-              animate={{
-                rotate: 360,
-                scale: [1, 1.1, 1]
-              }}
-              transition={{
-                rotate: { duration: 3, repeat: Infinity, ease: 'linear' },
-                scale: { duration: 1.5, repeat: Infinity }
-              }}
-            />
-            <motion.div
-              className="absolute inset-4 border-4 border-orange-500 rounded-full"
-              animate={{
-                rotate: -360,
-                scale: [1, 1.1, 1]
-              }}
-              transition={{
-                rotate: { duration: 2.5, repeat: Infinity, ease: 'linear' },
-                scale: { duration: 1.2, repeat: Infinity }
-              }}
-            />
-            <motion.div
-              className="absolute inset-8 border-4 border-red-500 rounded-full"
-              animate={{
-                rotate: 360,
-                scale: [1, 1.1, 1]
-              }}
-              transition={{
-                rotate: { duration: 2, repeat: Infinity, ease: 'linear' },
-                scale: { duration: 0.8, repeat: Infinity }
-              }}
-            />
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-            >
-              <div className="text-5xl">🎯</div>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
             className="text-center"
           >
-            <h2 className="text-2xl font-bold mb-2 text-yellow-400">
-              {t('pain-transfer-scanning')}
+            <motion.div
+              initial={{ y: -20 }}
+              animate={{ y: 0 }}
+              className="text-6xl mb-6"
+            >
+              🔗
+            </motion.div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 text-yellow-400">
+              {t('pain-transfer-link-ready')}
             </h2>
-            <p className="text-gray-400 mb-4">
-              {t('pain-transfer-waiting-desc')}
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="mt-8 p-4 bg-notion-gray rounded-xl max-w-md"
-          >
-            <p className="text-sm text-gray-400 text-center mb-2">
-              {t('pain-transfer-copied')}
-            </p>
-            <p className="text-xs text-gray-500 text-center">
-              {t('pain-transfer-share-hint')}
+            <p className="text-gray-400 mb-8 max-w-md">
+              {t('pain-transfer-link-ready-desc')}
             </p>
           </motion.div>
 
           <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
@@ -370,19 +400,22 @@ function PainTransfer() {
               setCopied(false)
               setMode('choice')
             }}
-            className="mt-8 px-6 py-3 bg-notion-gray text-white rounded-xl font-semibold hover:bg-notion-light transition-colors"
+            className="px-8 py-4 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-xl font-semibold hover:shadow-xl hover:shadow-yellow-500/20 transition-all"
           >
             {t('pain-transfer-restart')}
           </motion.button>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-            className="mt-4 text-gray-500 text-xs"
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/')}
+            className="mt-4 px-6 py-3 bg-notion-gray text-white rounded-xl font-semibold hover:bg-notion-light transition-colors"
           >
-            {t('pain-transfer-stay-open')}
-          </motion.div>
+            {t('back-to-menu')}
+          </motion.button>
         </div>
       </div>
     )
