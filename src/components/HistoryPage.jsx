@@ -3,28 +3,67 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { supabase, getDeviceId } from '../supabaseClient'
 
 function HistoryPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [history, setHistory] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const savedHistory = JSON.parse(localStorage.getItem('decisionHistory') || '[]')
-    setHistory(savedHistory)
+    fetchHistory()
   }, [])
 
-  const deleteItem = (id) => {
+  const fetchHistory = async () => {
+    setLoading(true)
+    const deviceId = getDeviceId()
+    const { data, error } = await supabase
+      .from('decision_history')
+      .select('*')
+      .eq('device_id', deviceId)
+      .order('timestamp', { ascending: false })
+    
+    if (error) {
+      console.error('Error fetching history:', error)
+      const localHistory = JSON.parse(localStorage.getItem('decisionHistory') || '[]')
+      setHistory(localHistory)
+    } else {
+      setHistory(data || [])
+    }
+    setLoading(false)
+  }
+
+  const deleteItem = async (id) => {
+    const deviceId = getDeviceId()
+    const { error } = await supabase
+      .from('decision_history')
+      .delete()
+      .eq('id', id)
+      .eq('device_id', deviceId)
+    
+    if (error) {
+      console.error('Error deleting item:', error)
+    }
+    
     const newHistory = history.filter(item => item.id !== id)
     setHistory(newHistory)
-    localStorage.setItem('decisionHistory', JSON.stringify(newHistory))
     setSelectedItem(null)
   }
 
-  const clearAll = () => {
+  const clearAll = async () => {
+    const deviceId = getDeviceId()
+    const { error } = await supabase
+      .from('decision_history')
+      .delete()
+      .eq('device_id', deviceId)
+    
+    if (error) {
+      console.error('Error clearing history:', error)
+    }
+    
     setHistory([])
-    localStorage.setItem('decisionHistory', '[]')
     setSelectedItem(null)
   }
 
@@ -70,6 +109,20 @@ function HistoryPage() {
       case 'intuition': return 'from-indigo-500 to-purple-600'
       default: return 'from-gray-500 to-gray-600'
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-notion-dark flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="text-4xl"
+        >
+          🎯
+        </motion.div>
+      </div>
+    )
   }
 
   return (

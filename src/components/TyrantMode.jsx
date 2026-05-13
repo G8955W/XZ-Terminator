@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { saveToHistory } from '../utils/history'
 
 function TyrantMode() {
   const navigate = useNavigate()
@@ -85,20 +86,12 @@ function TyrantMode() {
     if (newOptions.length === 1) {
       setFinalOption(newOptions[0])
       setIsFinished(true)
-      saveToHistory(newOptions[0])
+      handleSaveToHistory(newOptions[0])
     }
   }
 
-  const saveToHistory = (winner) => {
-    const history = JSON.parse(localStorage.getItem('decisionHistory') || '[]')
-    history.unshift({
-      id: Date.now(),
-      type: 'tyrant',
-      options: options,
-      winner: winner,
-      timestamp: new Date().toISOString()
-    })
-    localStorage.setItem('decisionHistory', JSON.stringify(history.slice(0, 50)))
+  const handleSaveToHistory = async (winner) => {
+    await saveToHistory('tyrant', options, winner)
   }
 
   const isLastOption = currentIndex >= options.length - 1

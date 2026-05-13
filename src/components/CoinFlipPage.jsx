@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
+import { saveToHistory } from '../utils/history'
 
 function CoinFlipPage() {
   const navigate = useNavigate()
@@ -37,31 +38,23 @@ function CoinFlipPage() {
     }, 1500)
   }
 
-  const handleIntercept = (selectedIndex) => {
+  const handleIntercept = async (selectedIndex) => {
     setShowIntercept(false)
     setResult(options[selectedIndex])
     setPhase('result')
-    saveToHistory(options[selectedIndex])
+    await handleSaveToHistory(options[selectedIndex])
   }
 
-  const handleContinueFlip = () => {
+  const handleContinueFlip = async () => {
     setShowIntercept(false)
     const finalIndex = Math.random() > 0.5 ? 0 : 1
     setResult(options[finalIndex])
     setPhase('result')
-    saveToHistory(options[finalIndex])
+    await handleSaveToHistory(options[finalIndex])
   }
 
-  const saveToHistory = (winner) => {
-    const history = JSON.parse(localStorage.getItem('decisionHistory') || '[]')
-    history.unshift({
-      id: Date.now(),
-      type: 'coin',
-      options: options,
-      winner: winner,
-      timestamp: new Date().toISOString()
-    })
-    localStorage.setItem('decisionHistory', JSON.stringify(history.slice(0, 50)))
+  const handleSaveToHistory = async (winner) => {
+    await saveToHistory('coin', options, winner)
   }
 
   const handleRestart = () => {

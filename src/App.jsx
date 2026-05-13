@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useEffect } from 'react'
 import Home from './components/Home'
 import HubPage from './components/HubPage'
 import InitialPage from './components/InitialPage'
@@ -14,9 +15,14 @@ import TyrantMode from './components/TyrantMode'
 import PainTransfer from './components/PainTransfer'
 import ToxicityTest from './components/ToxicityTest'
 import BottomAdBanner from './components/BottomAdBanner'
+import { getDeviceId } from './supabaseClient'
 
 function App() {
   const { i18n } = useTranslation()
+
+  useEffect(() => {
+    getDeviceId()
+  }, [])
 
   const toggleLanguage = () => {
     const newLang = i18n.language === 'zh' ? 'en' : 'zh'
