@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
-import { saveToHistory } from '../utils/history'
+
 
 function IntuitionPage() {
   const location = useLocation()
@@ -66,12 +66,20 @@ function IntuitionPage() {
   }
 
   const handleConfirm = () => {
-    handleSaveToHistory(getRecommendedOption())
+    saveToHistory(getRecommendedOption())
     navigate('/')
   }
 
-  const handleSaveToHistory = async (winner) => {
-    await saveToHistory('intuition', originalOptions.length > 0 ? originalOptions : options, winner)
+  const saveToHistory = (winner) => {
+    const history = JSON.parse(localStorage.getItem('decisionHistory') || '[]')
+    history.unshift({
+      id: Date.now(),
+      type: 'intuition',
+      options: originalOptions.length > 0 ? originalOptions : options,
+      winner: winner,
+      timestamp: new Date().toISOString()
+    })
+    localStorage.setItem('decisionHistory', JSON.stringify(history.slice(0, 50)))
   }
 
   if (!options.length) return null

@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
-import { saveToHistory } from '../utils/history'
 
 function WheelPage() {
   const location = useLocation()
@@ -57,14 +56,14 @@ function WheelPage() {
       }, 1000)
     } else if (timeLeft === 0 && !isLocked) {
       setIsLocked(true)
-      handleSaveToHistory(selectedOption)
+      saveToHistory(selectedOption)
     }
     return () => clearInterval(interval)
   }, [showModal, timeLeft, isLocked, selectedOption])
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     setIsLocked(true)
-    await handleSaveToHistory(selectedOption)
+    saveToHistory(selectedOption)
   }
 
   const handleRespin = () => {
@@ -73,8 +72,16 @@ function WheelPage() {
     setSelectedOption(null)
   }
 
-  const handleSaveToHistory = async (winner) => {
-    await saveToHistory('wheel', originalOptions.length > 0 ? originalOptions : options, winner)
+  const saveToHistory = (winner) => {
+    const history = JSON.parse(localStorage.getItem('decisionHistory') || '[]')
+    history.unshift({
+      id: Date.now(),
+      type: 'wheel',
+      options: originalOptions.length > 0 ? originalOptions : options,
+      winner: winner,
+      timestamp: new Date().toISOString()
+    })
+    localStorage.setItem('decisionHistory', JSON.stringify(history.slice(0, 50)))
   }
 
   const formatTime = (seconds) => {

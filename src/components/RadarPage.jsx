@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
-import { saveToHistory } from '../utils/history'
+
 
 function RadarChart({ data, size = 300, criteria }) {
   const centerX = size / 2
@@ -194,11 +194,20 @@ function RadarPage() {
     setResults(resultsData)
     setWinner(resultsData[0].name)
     setPhase('result')
-    handleSaveToHistory(resultsData[0].name, resultsData)
+    saveToHistory(resultsData[0].name, resultsData)
   }
 
-  const handleSaveToHistory = async (winner, data) => {
-    await saveToHistory('radar', options, winner)
+  const saveToHistory = (winner, data) => {
+    const history = JSON.parse(localStorage.getItem('decisionHistory') || '[]')
+    history.unshift({
+      id: Date.now(),
+      type: 'radar',
+      options: options,
+      winner: winner,
+      scores: data,
+      timestamp: new Date().toISOString()
+    })
+    localStorage.setItem('decisionHistory', JSON.stringify(history.slice(0, 50)))
   }
 
   const handleRestart = () => {
