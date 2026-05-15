@@ -6,10 +6,10 @@ import Navigation from './Navigation'
 import { Helmet } from 'react-helmet-async'
 import DecisionCard from './DecisionCard'
 
-function CoinFlipPage() {
+function CoinFlipPage({ presetOptions, scenario }) {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [options, setOptions] = useState(['', ''])
   const [phase, setPhase] = useState('input')
   const [isFlipping, setIsFlipping] = useState(false)
@@ -29,6 +29,12 @@ function CoinFlipPage() {
 
   // 读取 URL 参数并自动填充选项
   useEffect(() => {
+    // 如果有预设选项（场景化路由），优先使用
+    if (presetOptions && presetOptions.length >= 2) {
+      setOptions([presetOptions[0], presetOptions[1]])
+      return
+    }
+
     const optionsParam = searchParams.get('options')
     if (optionsParam) {
       try {
@@ -41,12 +47,14 @@ function CoinFlipPage() {
         console.error('Failed to parse options:', e)
       }
     }
-  }, [searchParams])
+  }, [searchParams, presetOptions])
 
-  // 如果有 URL 参数且还没有自动翻转，就自动开始翻转
+  // 如果有 URL 参数或预设选项且还没有自动翻转，就自动开始翻转
   useEffect(() => {
     const optionsParam = searchParams.get('options')
-    if (optionsParam && isValid && !hasAutoFlipped && !isFlipping && phase === 'input') {
+    const shouldAutoFlip = (optionsParam || presetOptions) && isValid && !hasAutoFlipped && !isFlipping && phase === 'input'
+    
+    if (shouldAutoFlip) {
       // 延迟一点时间让界面加载完成
       const timer = setTimeout(() => {
         flipCoin()
@@ -54,7 +62,7 @@ function CoinFlipPage() {
       }, 800)
       return () => clearTimeout(timer)
     }
-  }, [searchParams, isValid, hasAutoFlipped, isFlipping, phase])
+  }, [searchParams, presetOptions, isValid, hasAutoFlipped, isFlipping, phase])
 
   // 生成分享链接
   const generateShareLink = () => {
@@ -337,6 +345,49 @@ function CoinFlipPage() {
             {t('coin-title') === "Schrödinger's Coin" ? 'Try again' : '再来一次'}
           </motion.button>
         </motion.div>
+          )}
+
+          {scenario && phase === 'result' && (
+            <motion.section
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="w-full max-w-xl mt-12"
+            >
+              <div className="bg-gradient-to-br from-notion-gray/50 to-notion-dark/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-notion-light/20">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl">💡</span>
+                  <h2 className="text-xl font-bold text-white">
+                    {scenario.contentMoat[i18n.language].title}
+                  </h2>
+                </div>
+                
+                <div className="text-gray-300 text-sm md:text-base leading-relaxed space-y-3">
+                  {scenario.contentMoat[i18n.language].points.map((point, index) => (
+                    <p key={index}>{point}</p>
+                  ))}
+                </div>
+
+                <div className="mt-6 grid grid-cols-3 gap-3">
+                  {[
+                    { icon: '🎯', label: '快速决策' },
+                    { icon: '⚖️', label: '公平公正' },
+                    { icon: '✨', label: '发现自我' }
+                  ].map((item, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.8 + index * 0.1 }}
+                      className="text-center p-3 bg-notion-dark/50 rounded-xl"
+                    >
+                      <div className="text-xl mb-1">{item.icon}</div>
+                      <div className="text-xs text-gray-400">{item.label}</div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.section>
           )}
         </AnimatePresence>
 

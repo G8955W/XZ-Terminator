@@ -43,6 +43,24 @@ function Home() {
       gradient: 'from-green-600 to-emerald-800',
       path: '/toxicity',
       description: t('home-toxicity-desc')
+    },
+    {
+      id: 'text-rpg',
+      title: t('home-text-rpg'),
+      subtitle: 'Story · Adventure',
+      icon: '📖',
+      gradient: 'from-purple-600 to-pink-600',
+      path: '/text-rpg',
+      description: t('home-text-rpg-desc')
+    },
+    {
+      id: 'mystery-box',
+      title: t('home-mystery-box'),
+      subtitle: 'Mystery · Surprise',
+      icon: '🎁',
+      gradient: 'from-orange-500 to-red-600',
+      path: '/mystery-box',
+      description: t('home-mystery-box-desc')
     }
   ]
 

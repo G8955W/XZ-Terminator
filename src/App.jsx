@@ -13,6 +13,9 @@ import HistoryPage from './components/HistoryPage'
 import TyrantMode from './components/TyrantMode'
 import PainTransfer from './components/PainTransfer'
 import ToxicityTest from './components/ToxicityTest'
+import TextRpgMode from './components/TextRpgMode'
+import MysteryBoxMode from './components/MysteryBoxMode'
+import ScenarioPage from './components/ScenarioPage'
 import BottomAdBanner from './components/BottomAdBanner'
 import Footer from './components/Footer'
 import LanguageHandler from './components/LanguageHandler'
@@ -53,6 +56,13 @@ function App() {
             <Route path="/tyrant" element={<TyrantMode />} />
             <Route path="/pain-transfer" element={<PainTransfer />} />
             <Route path="/toxicity" element={<ToxicityTest />} />
+            <Route path="/text-rpg" element={<TextRpgMode />} />
+            <Route path="/mystery-box" element={<MysteryBoxMode />} />
+
+            <Route path="/what-to-eat" element={<ScenarioPage />} />
+            <Route path="/truth-or-dare" element={<ScenarioPage />} />
+            <Route path="/who-pays" element={<ScenarioPage />} />
+            <Route path="/coin-flip" element={<ScenarioPage />} />
 
             <Route path="/coin" element={<CoinFlipPage />} />
             <Route path="/radar" element={<RadarPage />} />

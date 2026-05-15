@@ -14,6 +14,8 @@ function PainTransfer() {
   const [options, setOptions] = useState([])
   const [inputOptions, setInputOptions] = useState(['', ''])
   const [copied, setCopied] = useState(false)
+  const [topic, setTopic] = useState('')
+  const [decodedTopic, setDecodedTopic] = useState(null)
   const [isWaiting, setIsWaiting] = useState(false)
   const [selectedOption, setSelectedOption] = useState(null)
   const [showConfetti, setShowConfetti] = useState(false)
@@ -25,6 +27,18 @@ function PainTransfer() {
     const params = new URLSearchParams(window.location.search)
     const shareMode = params.get('mode')
     const encodedOptions = params.get('options')
+    const topicParam = params.get('topic')
+
+    if (topicParam) {
+      try {
+        const decoded = decodeURIComponent(topicParam)
+        if (decoded.trim()) {
+          setDecodedTopic(decoded)
+        }
+      } catch (e) {
+        console.error('Failed to decode topic:', e)
+      }
+    }
 
     if (shareMode === 'share' && encodedOptions) {
       try {
@@ -57,7 +71,12 @@ function PainTransfer() {
 
     const encoded = btoa(unescape(encodeURIComponent(validOptions.join(','))))
     const baseUrl = window.location.origin
-    const shareUrl = `${baseUrl}/pain-transfer?mode=share&options=${encoded}`
+    let shareUrl = `${baseUrl}/pain-transfer?mode=share&options=${encoded}`
+    
+    if (topic.trim()) {
+      const encodedTopic = encodeURIComponent(topic)
+      shareUrl += `&topic=${encodedTopic}`
+    }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       type: 'waiting',
@@ -224,6 +243,21 @@ function PainTransfer() {
         <Navigation title={t('pain-transfer-friend')} />
 
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+          {decodedTopic && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mb-6"
+            >
+              <h2 className="text-xl md:text-2xl font-bold text-yellow-400">
+                {t('pain-transfer-topic-title')}
+              </h2>
+              <p className="text-lg md:text-xl font-bold text-white mt-2 px-4">
+                {decodedTopic}
+              </p>
+            </motion.div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -456,6 +490,22 @@ function PainTransfer() {
           </div>
 
           <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <label className="block text-yellow-400 text-sm font-medium mb-2">
+                {t('pain-transfer-topic-label')}
+              </label>
+              <input
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder={t('pain-transfer-topic-placeholder')}
+                className="w-full bg-notion-gray border border-notion-light rounded-xl px-4 py-3 text-notion-text placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition-colors"
+              />
+            </motion.div>
+
             {inputOptions.map((opt, index) => (
               <motion.div
                 key={index}

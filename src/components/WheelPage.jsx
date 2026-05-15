@@ -5,12 +5,13 @@ import { useTranslation } from 'react-i18next'
 import Navigation from './Navigation'
 import { Helmet } from 'react-helmet-async'
 import DecisionCard from './DecisionCard'
+import ShareButton from './ShareButton'
 
-function WheelPage() {
+function WheelPage({ presetOptions, scenario }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [isSpinning, setIsSpinning] = useState(false)
   const [rotation, setRotation] = useState(0)
   const [selectedOption, setSelectedOption] = useState(null)
@@ -26,6 +27,13 @@ function WheelPage() {
 
   // 初始化选项
   useEffect(() => {
+    // 如果有预设选项（场景化路由），优先使用
+    if (presetOptions && presetOptions.length >= 2) {
+      setOptions(presetOptions)
+      setOriginalOptions(presetOptions)
+      return
+    }
+
     // 首先尝试从 URL 参数读取
     const optionsParam = searchParams.get('options')
     if (optionsParam) {
@@ -46,7 +54,7 @@ function WheelPage() {
       setOptions(location.state.options)
       setOriginalOptions(location.state.originalOptions || location.state.options)
     }
-  }, [location.state, searchParams])
+  }, [location.state, searchParams, presetOptions])
 
   // 没有选项时跳转，但如果有 state 数据则等待加载
   useEffect(() => {
@@ -229,6 +237,15 @@ function WheelPage() {
           </motion.div>
         </div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="w-full max-w-xl mt-6"
+        >
+          <ShareButton options={options} autoPlay={true} />
+        </motion.div>
+
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -239,21 +256,29 @@ function WheelPage() {
             <div className="flex items-center gap-3 mb-4">
               <span className="text-2xl">💡</span>
               <h2 className="text-xl font-bold text-white">
-                {t('wheel-title') === '命运转盘' ? '如何使用随机转盘做决策' : 'How to Use the Random Wheel'}
+                {scenario ? scenario.contentMoat[i18n.language].title : (t('wheel-title') === '命运转盘' ? '如何使用随机转盘做决策' : 'How to Use the Random Wheel')}
               </h2>
             </div>
             
             <div className="text-gray-300 text-sm md:text-base leading-relaxed space-y-3">
-              <p>
-                {t('wheel-title') === '命运转盘' 
-                  ? '随机转盘是一种经典的决策工具，尤其适合在多个选项之间犹豫不决时使用。心理学研究表明，当我们难以做出选择时，随机性可以帮助我们突破思维定式，发现内心深处的真实偏好。' 
-                  : 'The random wheel is a classic decision-making tool, especially useful when hesitating between multiple options. Psychological research shows that when we struggle to choose, randomness helps break through mental blocks and reveal our true inner preferences.'}
-              </p>
-              <p>
-                {t('wheel-title') === '命运转盘' 
-                  ? '使用时，只需在输入框中添加你的选项，点击旋转按钮即可。我们独特的反悔机制允许你在选择后短暂思考，如果内心有强烈的抵触感，可以写下理由重新选择。这个过程能帮助你更好地了解自己的真实想法。' 
-                  : 'Simply add your options, click spin, and let fate decide. Our unique regret mechanism allows you to reconsider after the wheel stops. If you feel strong resistance, write a reason and spin again. This process helps you better understand your true desires.'}
-              </p>
+              {scenario ? (
+                scenario.contentMoat[i18n.language].points.map((point, index) => (
+                  <p key={index}>{point}</p>
+                ))
+              ) : (
+                <>
+                  <p>
+                    {t('wheel-title') === '命运转盘' 
+                      ? '随机转盘是一种经典的决策工具，尤其适合在多个选项之间犹豫不决时使用。心理学研究表明，当我们难以做出选择时，随机性可以帮助我们突破思维定式，发现内心深处的真实偏好。' 
+                      : 'The random wheel is a classic decision-making tool, especially useful when hesitating between multiple options. Psychological research shows that when we struggle to choose, randomness helps break through mental blocks and reveal our true inner preferences.'}
+                  </p>
+                  <p>
+                    {t('wheel-title') === '命运转盘' 
+                      ? '使用时，只需在输入框中添加你的选项，点击旋转按钮即可。我们独特的反悔机制允许你在选择后短暂思考，如果内心有强烈的抵触感，可以写下理由重新选择。这个过程能帮助你更好地了解自己的真实想法。' 
+                      : 'Simply add your options, click spin, and let fate decide. Our unique regret mechanism allows you to reconsider after the wheel stops. If you feel strong resistance, write a reason and spin again. This process helps you better understand your true desires.'}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="mt-6 grid grid-cols-3 gap-3">
